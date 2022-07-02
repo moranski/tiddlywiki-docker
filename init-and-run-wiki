@@ -19,7 +19,27 @@ fi
 
 # Start the tiddlywiki server
 if [ -z "$USERNAME" ]; then
-    exec /usr/bin/env node $NODEJS_V8_ARGS $tiddlywiki_script mywiki --listen host=0.0.0.0 port=8080 debug-level=${DEBUG_LEVEL-none};
-else
-    exec /usr/bin/env node $NODEJS_V8_ARGS $tiddlywiki_script mywiki --listen host=0.0.0.0 port=8080 username="$USERNAME" password="${PASSWORD-wiki}" debug-level=${DEBUG_LEVEL-none};
+    echo "missing USERNAME env" ; exit 1
 fi
+
+if [ -z "$PASSWORD" ]; then
+    echo "missing PASSWORD env" ; exit 1
+fi
+
+if [ ! -f /etc/tiddlywiki/cert/key.pem ] ; then
+    echo "missing file /etc/tiddlywiki/cert/key.pem"
+fi
+
+if [ ! -f /etc/tiddlywiki/cert/server.pem ] ; then
+    echo "missing file /etc/tiddlywiki/cert/server.pem"
+fi
+
+exec /usr/bin/env node $NODEJS_V8_ARGS $tiddlywiki_script mywiki \
+  --listen \
+  host=0.0.0.0 \
+  port=8080 \
+  username="$USERNAME" \
+  password="${PASSWORD}" \
+  tls-key=/etc/tiddlywiki/cert/key.pem \
+  tls-cert=/etc/tiddlywiki/cert/server.crt \
+  debug-level=${DEBUG_LEVEL-none}
